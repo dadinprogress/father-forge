@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ The Father Forge — Complete Command Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #0a0e27;
+            --dark: #1a1f3a;
+            --darker: #0f1425;
+            --accent: #00d9ff;
+            --gold: #ffd700;
+            --text: #e0e6ff;
+            --text-dim: #a8afc8;
+            --text-darker: #7a8299;
+            --red: #ff4757;
+            --orange: #ffa502;
+            --green: #26de81;
+            --purple: #6c5ce7;
+            --blue: #0984e3;
+        }
+
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, var(--black) 0%, var(--darker) 100%);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(108, 92, 231, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 280px;
+            background: rgba(10, 14, 39, 0.95);
+            border-right: 1px solid rgba(0, 217, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .forge-logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .version {
+            font-size: 10px;
+            color: var(--text-darker);
+            margin-left: auto;
+        }
+
+        .nav-group {
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.05);
+        }
+
+        .nav-group-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-darker);
+            padding: 12px 20px 8px;
+            font-weight: 600;
+        }
+
+        nav a, nav button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        nav a:hover, nav button:hover {
+            background: rgba(0, 217, 255, 0.08);
+            color: var(--accent);
+        }
+
+        nav a.active, nav button.active {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+            padding-left: 17px;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .ping-btn {
+            margin: 20px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            border: none;
+            color: var(--black);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ping-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.3);
+        }
+
+        /* MAIN CONTENT */
+        main {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(38, 222, 129, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(38, 222, 129, 0.3);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--green);
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* GRID LAYOUTS */
+        .grid {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media (max-width: 1400px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .grid-full {
+            grid-column: 1 / -1;
+        }
+
+        /* CARDS */
+        .card {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 217, 255, 0.2);
+            background: rgba(26, 31, 58, 0.8);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-darker);
+        }
+
+        .card-progress {
+            margin-top: 16px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 100%);
+            transition: width 0.5s;
+        }
+
+        /* ITEMS */
+        .item {
+            background: rgba(26, 31, 58, 0.8);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .item:hover {
+            border-color: rgba(0, 217, 255, 0.2);
+            background: rgba(26, 31, 58, 1);
+        }
+
+        .item-checkbox {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .item.done .item-checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .item.done .item-checkbox::after {
+            content: '✓';
+            color: var(--black);
+            font-weight: bold;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-darker);
+        }
+
+        .badge {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.urgent {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--red);
+        }
+
+        .stone {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(108, 92, 231, 0.08) 100%);
+            border-left: 4px solid var(--accent);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stone:hover {
+            border-left-color: var(--gold);
+        }
+
+        .stone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .stone-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .stone-eta {
+            font-size: 11px;
+            color: var(--text-darker);
+        }
+
+        /* SECTIONS */
+        section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* EMPTY STATE */
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-darker);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* MODALS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .modal-text {
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            font-family: inherit;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            color: var(--black);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            border-color: rgba(0, 217, 255, 0.4);
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 217, 255, 0.4);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            aside {
+                position: fixed;
+                left: -280px;
+                transition: left 0.3s;
+            }
+
+            aside.open {
+                left: 0;
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="forge-logo">⚔️ FORGE</div>
+                <div class="version">v1.0</div>
+            </div>
+
+            <nav>
+                <div class="nav-group">
+                    <div class="nav-group-title">COMMAND CENTER</div>
+                    <a href="#" data-view="dashboard" class="nav-link active">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                    <a href="#" data-view="missions" class="nav-link">
+                        <span class="nav-icon">🔴</span> Infinity Stones
+                    </a>
+                    <a href="#" data-view="war-room" class="nav-link">
+                        <span class="nav-icon">📋</span> War Room
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">OPERATIONS</div>
+                    <a href="#" data-view="content" class="nav-link">
+                        <span class="nav-icon">📹</span> Content Hub
+                    </a>
+                    <a href="#" data-view="leads" class="nav-link">
+                        <span class="nav-icon">👥</span> Lead Intelligence
+                    </a>
+                    <a href="#" data-view="financials" class="nav-link">
+                        <span class="nav-icon">💰</span> Financials
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">KNOWLEDGE</div>
+                    <a href="#" data-view="analytics" class="nav-link">
+                        <span class="nav-icon">📈</span> Analytics
+                    </a>
+                    <a href="#" data-view="arsenal" class="nav-link">
+                        <span class="nav-icon">🛠️</span> Arsenal
+                    </a>
+                    <a href="#" data-view="library" class="nav-link">
+                        <span class="nav-icon">📚</span> Library
+                    </a>
+                </div>
+            </nav>
+
+            <div class="spacer"></div>
+
+            <button class="ping-btn" id="pingBtn">📡 PING TONY</button>
+        </aside>
+
+        <!-- MAIN -->
+        <main>
+            <header>
+                <div class="page-title" id="pageTitle">📊 Dashboard</div>
+                <div class="status-badge">
+                    <div class="pulse"></div> OPERATIONAL
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- DASHBOARD VIEW -->
+                <div class="view active" id="dashboard-view">
+                    <section>
+                        <div class="grid grid-4">
+                            <div class="card">
+                                <div class="card-title">Days Until Event</div>
+                                <div class="card-value">7</div>
+                                <div class="card-sub">April 24, 2026</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">MRR Progress</div>
+                                <div class="card-value" id="mrrValue">$0</div>
+                                <div class="card-sub">Target: $10k/month</div>
+                                <div class="card-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="mrrFill" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Stones Locked</div>
+                                <div class="card-value" id="stonesValue">0</div>
+                                <div class="card-sub">of 5 Infinity Stones</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">War Room</div>
+                                <div class="card-value" id="tasksValue">6</div>
+                                <div class="card-sub">Active missions</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>🔥 Priority Actions</h2>
+                        <div id="priorityItems"></div>
+                    </section>
+
+                    <section>
+                        <h2>⚡ Recent Activity</h2>
+                        <div id="activityFeed"></div>
+                    </section>
+                </div>
+
+                <!-- MISSIONS VIEW -->
+                <div class="view" id="missions-view">
+                    <section>
+                        <h2>🔴 The Infinity Stones</h2>
+                        <div id="stonesList"></div>
+                    </section>
+                </div>
+
+                <!-- WAR ROOM VIEW -->
+                <div class="view" id="war-room-view">
+                    <section>
+                        <h2>📋 War Room Tasks</h2>
+                        <div id="warRoomList"></div>
+                    </section>
+                </div>
+
+                <!-- CONTENT VIEW -->
+                <div class="view" id="content-view">
+                    <section>
+                        <h2>📹 Content Hub</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">YouTube</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">Videos uploaded</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Instagram</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">Posts scheduled</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">TikTok</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">Drafts pending</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Email</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">Newsletters sent</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>📝 Content Calendar</h2>
+                        <div class="empty">
+                            <div class="empty-icon">📅</div>
+                            <p>Content calendar coming soon. Track all @progressdad output here.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- LEADS VIEW -->
+                <div class="view" id="leads-view">
+                    <section>
+                        <h2>👥 Lead Intelligence</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">Total Leads</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">From all sources</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">High-Quality</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">ICP match</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>📊 April 24 Event Tracking</h2>
+                        <div class="card grid-full">
+                            <div>
+                                <div class="card-title">Prepared For Event</div>
+                                <div style="margin-top: 12px; padding: 12px; background: rgba(0,217,255,0.1); border-radius: 6px; font-size: 13px; line-height: 1.8;">
+                                    <strong>✓ Website live:</strong> nicholasdona.com<br>
+                                    <strong>✓ QR code:</strong> On business cards<br>
+                                    <strong>✓ Form:</strong> Formspree integrated<br>
+                                    <strong>✓ Analytics:</strong> Plausible tracking live<br>
+                                    <strong>✓ Follow-up templates:</strong> Ready<br>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- FINANCIALS VIEW -->
+                <div class="view" id="financials-view">
+                    <section>
+                        <h2>💰 Financial Dashboard</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">Current MRR</div>
+                                <div class="card-value">$0</div>
+                                <div class="card-sub">Monthly recurring</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Target MRR (Dec 2026)</div>
+                                <div class="card-value">$10,000</div>
+                                <div class="card-sub">Time to goal: 8 months</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>🎯 Revenue Milestones</h2>
+                        <div id="revenueMilestones"></div>
+                    </section>
+                </div>
+
+                <!-- ANALYTICS VIEW -->
+                <div class="view" id="analytics-view">
+                    <section>
+                        <h2>📈 Analytics Dashboard</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">Website CTR</div>
+                                <div class="card-value">0%</div>
+                                <div class="card-sub">Expected 15-20% at event</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Form Conversion</div>
+                                <div class="card-value">0%</div>
+                                <div class="card-sub">Estimated 70-80% completion</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Page Load Time</div>
+                                <div class="card-value">< 1s</div>
+                                <div class="card-sub">Mobile optimized</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Cost per Lead</div>
+                                <div class="card-value">$0</div>
+                                <div class="card-sub">Organic event traffic</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ARSENAL VIEW -->
+                <div class="view" id="arsenal-view">
+                    <section>
+                        <h2>🛠️ The Arsenal</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">Email Templates</div>
+                                <div class="card-value">2</div>
+                                <div class="card-sub">Tier 1 & Tier 2 follow-ups</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Proposal Templates</div>
+                                <div class="card-value">1</div>
+                                <div class="card-sub">Service offerings</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Playbooks</div>
+                                <div class="card-value">3</div>
+                                <div class="card-sub">SOPs & workflows</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Case Studies</div>
+                                <div class="card-value">0</div>
+                                <div class="card-sub">Ready when first client lands</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>📂 Files & Resources</h2>
+                        <div class="empty">
+                            <div class="empty-icon">📁</div>
+                            <p>Arsenal files integrated from GitHub. Templates auto-sync.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- LIBRARY VIEW -->
+                <div class="view" id="library-view">
+                    <section>
+                        <h2>📚 Knowledge Base</h2>
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-title">Core Principles</div>
+                                <div class="card-sub" style="margin-top: 8px; line-height: 1.6;">
+                                    • Founder, not freelancer<br>
+                                    • Content feeds everything<br>
+                                    • Systems before scale<br>
+                                    • No employer references<br>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-title">Strategic Decisions</div>
+                                <div class="card-sub" style="margin-top: 8px; line-height: 1.6;">
+                                    • Positioning locked<br>
+                                    • Event = brand seeding<br>
+                                    • Tiered follow-up<br>
+                                    • GitHub as source of truth<br>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>🔍 Recent Decisions</h2>
+                        <div id="decisionsList"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PING MODAL -->
+    <div class="modal" id="pingModal">
+        <div class="modal-content">
+            <div class="modal-title">📡 Ping Tony</div>
+            <div class="modal-text">Send an urgent message to Tony. He'll get back to you immediately.</div>
+            <textarea id="pingMessage" style="width: 100%; min-height: 80px; background: rgba(0,217,255,0.1); border: 1px solid rgba(0,217,255,0.2); color: var(--text); border-radius: 6px; padding: 12px; font-family: inherit; margin-bottom: 16px; resize: none;" placeholder="What do you need?"></textarea>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="sendPing()">Send Ping</button>
+                <button class="btn-secondary" onclick="closePingModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const REPO = 'dadinprogress/father-forge';
+
+        // Navigation
+        document.querySelectorAll('[data-view]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const view = link.dataset.view;
+                switchView(view);
+            });
+        });
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(`${viewName}-view`).classList.add('active');
+            document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+
+            // Update page title
+            const titles = {
+                dashboard: '📊 Dashboard',
+                missions: '🔴 Infinity Stones',
+                'war-room': '📋 War Room',
+                content: '📹 Content Hub',
+                leads: '👥 Lead Intelligence',
+                financials: '💰 Financials',
+                analytics: '📈 Analytics',
+                arsenal: '🛠️ Arsenal',
+                library: '📚 Library'
+            };
+            document.getElementById('pageTitle').textContent = titles[viewName] || 'Dashboard';
+        }
+
+        // Ping functionality
+        document.getElementById('pingBtn').addEventListener('click', () => {
+            document.getElementById('pingModal').classList.add('active');
+        });
+
+        function closePingModal() {
+            document.getElementById('pingModal').classList.remove('active');
+            document.getElementById('pingMessage').value = '';
+        }
+
+        function sendPing() {
+            const message = document.getElementById('pingMessage').value;
+            if (!message.trim()) return;
+            console.log('PING SENT:', message);
+            closePingModal();
+            alert('✓ Ping sent to Tony. Standing by...');
+        }
+
+        // Fetch issues from GitHub
+        async function loadData() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${REPO}/issues?per_page=100`);
+                const issues = await response.json();
+                renderData(issues);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function renderData(issues) {
+            const stones = issues.filter(i => i.number <= 5);
+            const tasks = issues.filter(i => i.number > 5);
+
+            // Update stats
+            document.getElementById('stonesValue').textContent = stones.filter(s => s.state === 'closed').length;
+            document.getElementById('tasksValue').textContent = tasks.length;
+
+            // Render stones
+            let stonesHtml = '';
+            const stoneColors = ['power', 'mind', 'soul', 'reality', 'time'];
+            const stoneEmojis = ['🔴', '🔵', '🟡', '🟢', '🟣'];
+            stones.forEach((stone, idx) => {
+                const progress = stone.state === 'closed' ? 100 : 20;
+                stonesHtml += `
+                    <div class="stone ${stoneColors[idx]}">
+                        <div class="stone-header">
+                            <span class="stone-name">${stoneEmojis[idx]} ${stone.title.split(':')[0]}</span>
+                            <span class="stone-eta">#${stone.number}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('stonesList').innerHTML = stonesHtml;
+
+            // Render tasks
+            let tasksHtml = '';
+            tasks.forEach(task => {
+                const isDone = task.state === 'closed';
+                tasksHtml += `
+                    <div class="item ${isDone ? 'done' : ''}">
+                        <div class="item-checkbox"></div>
+                        <div class="item-content">
+                            <div class="item-title">#${task.number}: ${task.title}</div>
+                            <div class="item-meta">
+                                ${task.labels.length > 0 ? `<span class="badge">${task.labels[0].name}</span>` : ''}
+                                <span>${task.state === 'closed' ? '✓ Complete' : '• Pending'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('warRoomList').innerHTML = tasksHtml;
+
+            // Priority items
+            let priorityHtml = '';
+            const urgent = tasks.filter(t => t.state === 'open').slice(0, 3);
+            urgent.forEach(task => {
+                priorityHtml += `
+                    <div class="item">
+                        <div class="item-checkbox"></div>
+                        <div class="item-content">
+                            <div class="item-title">${task.title}</div>
+                            <div class="item-meta">
+                                <span class="badge urgent">URGENT</span>
+                                <span>Due soon</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            if (!priorityHtml) priorityHtml = '<div class="empty"><p>All priorities clear ✓</p></div>';
+            document.getElementById('priorityItems').innerHTML = priorityHtml;
+
+            // Activity feed
+            let activityHtml = '';
+            const recent = issues.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5);
+            recent.forEach(issue => {
+                const time = new Date(issue.updated_at).toLocaleDateString();
+                activityHtml += `
+                    <div class="item">
+                        <div class="item-content">
+                            <div class="item-title">#${issue.number} ${issue.state === 'closed' ? '✓' : '•'} ${issue.title}</div>
+                            <div class="item-meta">
+                                <span>${time}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('activityFeed').innerHTML = activityHtml;
+
+            // Revenue milestones
+            let revenueHtml = `
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">🔴 Power Stone: First Client</div>
+                        <div class="item-meta"><span>$1.5k–5k revenue</span> <span class="badge">May 15</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">🔵 Mind Stone: $500/month</div>
+                        <div class="item-meta"><span>Build retainer base</span> <span class="badge">June 2026</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">🟡 Soul Stone: $2k/month</div>
+                        <div class="item-meta"><span>Business sustainable</span> <span class="badge">August 2026</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">🟢 Reality Stone: $5k/month</div>
+                        <div class="item-meta"><span>Path to $10k clear</span> <span class="badge">October 2026</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">🟣 Time Stone: $10k/month</div>
+                        <div class="item-meta"><span>Leave Vuteq, freedom</span> <span class="badge urgent">CRITICAL</span></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('revenueMilestones').innerHTML = revenueHtml;
+
+            // Decisions list
+            let decisionsHtml = `
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">Positioning: "I Eliminate Problems"</div>
+                        <div class="item-meta"><span>AI-assisted operations consulting</span> <span>April 16</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">Event Strategy: Brand Seeding</div>
+                        <div class="item-meta"><span>Not client acquisition, relationship building</span> <span>April 17</span></div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item-content">
+                        <div class="item-title">Source of Truth: GitHub Projects</div>
+                        <div class="item-meta"><span>All work tracked transparently</span> <span>April 17</span></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('decisionsList').innerHTML = decisionsHtml;
+        }
+
+        // Load on startup
+        loadData();
+
+        // Refresh every 30 seconds
+        setInterval(loadData, 30000);
+
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closePingModal();
+        });
+    </script>
+</body>
+</html>

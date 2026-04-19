@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ The Father Forge — Mission Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #0a0e27;
+            --dark: #1a1f3a;
+            --darker: #0f1425;
+            --accent: #00d9ff;
+            --accent-dim: #00a8cc;
+            --gold: #ffd700;
+            --text: #e0e6ff;
+            --text-dim: #a8afc8;
+            --red: #ff4757;
+            --green: #26de81;
+            --yellow: #ffa502;
+            --purple: #6c5ce7;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--black) 0%, var(--darker) 100%);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(108, 92, 231, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        header {
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(38, 222, 129, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(38, 222, 129, 0.3);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--green);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .update-time {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        main {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 1400px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        section {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .stone {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(108, 92, 231, 0.08) 100%);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stone:hover {
+            border-left-color: var(--gold);
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(108, 92, 231, 0.12) 100%);
+        }
+
+        .stone.power { border-left-color: #ff4757; }
+        .stone.mind { border-left-color: #0984e3; }
+        .stone.soul { border-left-color: #ffa502; }
+        .stone.reality { border-left-color: #26de81; }
+        .stone.time { border-left-color: #6c5ce7; }
+
+        .stone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .stone-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .stone-eta {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .progress-bar {
+            background: rgba(0, 217, 255, 0.1);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 100%);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .task {
+            background: rgba(26, 31, 58, 0.8);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+
+        .task:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            background: rgba(26, 31, 58, 1);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .task.done .task-checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .task.done .task-checkbox::after {
+            content: '✓';
+            color: var(--black);
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .task.done {
+            opacity: 0.6;
+        }
+
+        .task.done .task-title {
+            text-decoration: line-through;
+            color: var(--text-dim);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .task-label {
+            background: rgba(0, 217, 255, 0.15);
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 13px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-top: 5px;
+            min-width: 8px;
+        }
+
+        .activity-text {
+            flex: 1;
+        }
+
+        .activity-time {
+            color: var(--text-dim);
+            font-size: 11px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(108, 92, 231, 0.08) 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="logo">⚔️ THE FATHER FORGE</div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    OPERATIONAL
+                </div>
+            </div>
+            <div class="update-time" id="updateTime">Last updated: just now</div>
+        </header>
+
+        <main>
+            <!-- Left Column -->
+            <div>
+                <!-- Stats -->
+                <div class="stats full-width">
+                    <div class="stat">
+                        <div class="stat-value" id="stoneProgress">0</div>
+                        <div class="stat-label">Stones Locked</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="taskCount">0</div>
+                        <div class="stat-label">War Room Tasks</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="completionRate">0%</div>
+                        <div class="stat-label">Completion</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="daysToEvent">7</div>
+                        <div class="stat-label">Days to Event</div>
+                    </div>
+                </div>
+
+                <!-- Infinity Stones -->
+                <section>
+                    <h2>🔴 The Infinity Stones</h2>
+                    <div id="stonesList"></div>
+                </section>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- War Room -->
+                <section>
+                    <h2>📋 War Room</h2>
+                    <div id="warRoomList"></div>
+                </section>
+
+                <!-- Activity -->
+                <section style="margin-top: 40px;">
+                    <h2>⚡ Activity Feed</h2>
+                    <div id="activityFeed"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const REPO = 'dadinprogress/father-forge';
+
+        // Stone definitions
+        const stones = [
+            { num: 1, name: 'Power Stone', emoji: '🔴', color: 'power', eta: 'May 15' },
+            { num: 2, name: 'Mind Stone', emoji: '🔵', color: 'mind', eta: 'June 2026' },
+            { num: 3, name: 'Soul Stone', emoji: '🟡', color: 'soul', eta: 'August 2026' },
+            { num: 4, name: 'Reality Stone', emoji: '🟢', color: 'reality', eta: 'October 2026' },
+            { num: 5, name: 'Time Stone', emoji: '🟣', color: 'time', eta: 'December 2026' }
+        ];
+
+        async function fetchIssues() {
+            const response = await fetch(`https://api.github.com/repos/${REPO}/issues?per_page=100`);
+            return response.json();
+        }
+
+        function renderStones(issues) {
+            const stoneIssues = issues.filter(i => i.number <= 5);
+            let html = '';
+
+            stones.forEach(stone => {
+                const issue = stoneIssues.find(i => i.number === stone.num);
+                const progress = issue ? (issue.state === 'closed' ? 100 : 20) : 0;
+
+                html += `
+                    <div class="stone ${stone.color}">
+                        <div class="stone-header">
+                            <span class="stone-name">${stone.emoji} ${stone.name}</span>
+                            <span class="stone-eta">${stone.eta}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('stonesList').innerHTML = html;
+        }
+
+        function renderWarRoom(issues) {
+            const warRoom = issues.filter(i => i.number > 5);
+            let html = '';
+
+            if (warRoom.length === 0) {
+                html = '<div class="empty-state">All War Room tasks complete. Well done.</div>';
+            } else {
+                warRoom.forEach(task => {
+                    const isDone = task.state === 'closed';
+                    const label = task.labels[0]?.name || 'task';
+                    html += `
+                        <div class="task ${isDone ? 'done' : ''}">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-title">#${task.number}: ${task.title}</div>
+                                <div class="task-meta">
+                                    <span class="task-label">${label}</span>
+                                    <span>${task.state === 'closed' ? '✓ Done' : '• Open'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('warRoomList').innerHTML = html;
+        }
+
+        function renderActivity(issues) {
+            const recentActivity = issues
+                .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+                .slice(0, 5);
+
+            let html = '';
+            recentActivity.forEach(issue => {
+                const time = new Date(issue.updated_at);
+                const timeStr = time.toLocaleDateString() + ' ' + time.toLocaleTimeString();
+                const action = issue.state === 'closed' ? 'completed' : 'updated';
+                html += `
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div class="activity-text">
+                            <strong>#${issue.number}</strong> ${action}<br>
+                            <span class="activity-time">${timeStr}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('activityFeed').innerHTML = html;
+        }
+
+        function updateStats(issues) {
+            const totalStones = 5;
+            const lockedStones = issues.filter(i => i.number <= 5 && i.state === 'closed').length;
+            const warRoomTasks = issues.filter(i => i.number > 5).length;
+            const completedWarRoom = issues.filter(i => i.number > 5 && i.state === 'closed').length;
+            const completionRate = warRoomTasks > 0 ? Math.round((completedWarRoom / warRoomTasks) * 100) : 0;
+
+            document.getElementById('stoneProgress').textContent = lockedStones;
+            document.getElementById('taskCount').textContent = warRoomTasks;
+            document.getElementById('completionRate').textContent = completionRate + '%';
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = 'Updated: ' + now.toLocaleTimeString();
+        }
+
+        async function init() {
+            try {
+                const issues = await fetchIssues();
+                renderStones(issues);
+                renderWarRoom(issues);
+                renderActivity(issues);
+                updateStats(issues);
+                updateTime();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('stonesList').innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+            }
+        }
+
+        // Initial load
+        init();
+
+        // Refresh every 30 seconds
+        setInterval(init, 30000);
+    </script>
+</body>
+</html>
