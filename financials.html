@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father Forge - Financials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .mrr-display {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .mrr-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mrr-value {
+            font-size: 64px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .mrr-change {
+            color: #10b981;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .mrr-change.negative {
+            color: #ef4444;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 10px;
+        }
+        
+        .milestone-list {
+            margin-top: 20px;
+        }
+        
+        .milestone-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid transparent;
+        }
+        
+        .milestone-item.achieved {
+            border-left-color: #10b981;
+        }
+        
+        .milestone-item.in-progress {
+            border-left-color: #f59e0b;
+        }
+        
+        .milestone-item.pending {
+            border-left-color: #6b7280;
+        }
+        
+        .milestone-name {
+            font-weight: 600;
+        }
+        
+        .milestone-target {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        .milestone-progress {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .history-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .history-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Financials</h1>
+            <p class="subtitle">Revenue Tracking - Project 500K</p>
+        </header>
+        
+        <div id="messageBox" class="message"></div>
+        
+        <div class="grid">
+            <!-- Current MRR Display -->
+            <div class="card">
+                <div class="card-title">Current MRR</div>
+                <div class="mrr-display">
+                    <div class="mrr-label">Monthly Recurring Revenue</div>
+                    <div class="mrr-value" id="currentMRR">$0</div>
+                    <div class="mrr-change" id="mrrChange">—</div>
+                </div>
+                
+                <div class="milestone-list">
+                    <div class="milestone-item pending" id="milestone500">
+                        <div>
+                            <div class="milestone-name">Experiment Costs</div>
+                            <div class="milestone-target">Target: $500/month</div>
+                        </div>
+                        <div class="milestone-progress">0%</div>
+                    </div>
+                    
+                    <div class="milestone-item pending" id="milestone10k">
+                        <div>
+                            <div class="milestone-name">Bridge Goal</div>
+                            <div class="milestone-target">Target: $10,000/month</div>
+                        </div>
+                        <div class="milestone-progress">0%</div>
+                    </div>
+                    
+                    <div class="milestone-item pending" id="milestone42k">
+                        <div>
+                            <div class="milestone-name">Final Goal</div>
+                            <div class="milestone-target">Target: $42,000/month (Nov 2027)</div>
+                        </div>
+                        <div class="milestone-progress">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Update MRR Form -->
+            <div class="card">
+                <div class="card-title">Update Revenue</div>
+                
+                <form id="mrrForm" onsubmit="updateMRR(event)">
+                    <div class="form-group">
+                        <label for="mrrAmount">MRR Amount ($)</label>
+                        <input 
+                            type="number" 
+                            id="mrrAmount" 
+                            min="0" 
+                            step="0.01" 
+                            required 
+                            placeholder="0.00"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="revenueSource">Source</label>
+                        <select id="revenueSource" required>
+                            <option value="">Select source...</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="product">Product Sales</option>
+                            <option value="service">Service</option>
+                            <option value="subscription">Subscription</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes (optional)</label>
+                        <textarea 
+                            id="notes" 
+                            placeholder="Add context about this revenue update..."
+                        ></textarea>
+                    </div>
+                    
+                    <button type="submit" class="button">
+                        Save Update
+                    </button>
+                    
+                    <button type="button" class="button button-secondary" onclick="exportFinancials()">
+                        Export Data
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Revenue History -->
+        <div class="card">
+            <div class="card-title">Revenue History</div>
+            
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Source</th>
+                        <th>Change</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            No revenue updates yet. Add your first entry above.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Financial data structure
+        let financials = {
+            currentMRR: 0,
+            history: [],
+            milestones: {
+                experiment: 500,
+                bridge: 10000,
+                final: 42000
+            }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFinancials();
+        });
+        
+        async function updateMRR(event) {
+            event.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('mrrAmount').value);
+            const source = document.getElementById('revenueSource').value;
+            const notes = document.getElementById('notes').value;
+            
+            if (amount < 0) {
+                showMessage('Amount must be positive', 'error');
+                return;
+            }
+            
+            // Calculate change
+            const previousMRR = financials.currentMRR;
+            const change = amount - previousMRR;
+            
+            // Add to history
+            const entry = {
+                date: new Date().toISOString(),
+                amount: amount,
+                previousAmount: previousMRR,
+                change: change,
+                source: source,
+                notes: notes
+            };
+            
+            financials.history.unshift(entry);
+            financials.currentMRR = amount;
+            
+            // Save
+            await saveFinancials();
+            
+            // Update UI
+            renderFinancials();
+            
+            // Reset form
+            document.getElementById('mrrForm').reset();
+            
+            showMessage('Revenue updated successfully!', 'success');
+        }
+        
+        function renderFinancials() {
+            // Update MRR display
+            document.getElementById('currentMRR').textContent = 
+                `$${financials.currentMRR.toLocaleString('en-US', {minimumFractionDigits: 0})}`;
+            
+            // Update change indicator
+            if (financials.history.length > 0) {
+                const latestChange = financials.history[0].change;
+                const changeEl = document.getElementById('mrrChange');
+                if (latestChange > 0) {
+                    changeEl.textContent = `+$${latestChange.toLocaleString('en-US')} this update`;
+                    changeEl.className = 'mrr-change';
+                } else if (latestChange < 0) {
+                    changeEl.textContent = `-$${Math.abs(latestChange).toLocaleString('en-US')} this update`;
+                    changeEl.className = 'mrr-change negative';
+                } else {
+                    changeEl.textContent = 'No change';
+                    changeEl.className = 'mrr-change';
+                }
+            }
+            
+            // Update milestones
+            updateMilestone('milestone500', financials.milestones.experiment);
+            updateMilestone('milestone10k', financials.milestones.bridge);
+            updateMilestone('milestone42k', financials.milestones.final);
+            
+            // Update history table
+            renderHistory();
+        }
+        
+        function updateMilestone(id, target) {
+            const el = document.getElementById(id);
+            const progress = Math.min((financials.currentMRR / target) * 100, 100);
+            const progressEl = el.querySelector('.milestone-progress');
+            
+            progressEl.textContent = `${Math.round(progress)}%`;
+            
+            if (progress >= 100) {
+                el.className = 'milestone-item achieved';
+            } else if (progress > 0) {
+                el.className = 'milestone-item in-progress';
+            } else {
+                el.className = 'milestone-item pending';
+            }
+        }
+        
+        function renderHistory() {
+            const tbody = document.getElementById('historyBody');
+            
+            if (financials.history.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            No revenue updates yet. Add your first entry above.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = financials.history.map(entry => {
+                const date = new Date(entry.date).toLocaleDateString();
+                const changeText = entry.change >= 0 
+                    ? `+$${entry.change.toLocaleString('en-US')}`
+                    : `-$${Math.abs(entry.change).toLocaleString('en-US')}`;
+                const changeColor = entry.change >= 0 ? '#10b981' : '#ef4444';
+                
+                return `
+                    <tr>
+                        <td>${date}</td>
+                        <td>$${entry.amount.toLocaleString('en-US')}</td>
+                        <td>${entry.source}</td>
+                        <td style="color: ${changeColor}">${changeText}</td>
+                        <td>${entry.notes || '—'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async function loadFinancials() {
+            try {
+                // For MVP, use localStorage
+                const stored = localStorage.getItem('father-forge-financials');
+                if (stored) {
+                    financials = JSON.parse(stored);
+                }
+                
+                // TODO: Load from GitHub via backend proxy
+                
+                renderFinancials();
+            } catch (error) {
+                console.error('Failed to load financials:', error);
+            }
+        }
+        
+        async function saveFinancials() {
+            try {
+                // For MVP, save to localStorage
+                localStorage.setItem('father-forge-financials', JSON.stringify(financials));
+                
+                // TODO: Save to GitHub via backend proxy
+                console.log('Financials saved to localStorage (GitHub sync pending)');
+            } catch (error) {
+                console.error('Failed to save financials:', error);
+                throw error;
+            }
+        }
+        
+        function exportFinancials() {
+            const dataStr = JSON.stringify(financials, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `father-forge-financials-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            showMessage('Financial data exported successfully!', 'success');
+        }
+        
+        function showMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `message ${type}`;
+            box.style.display = 'block';
+            
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

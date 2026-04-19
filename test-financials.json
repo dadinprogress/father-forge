@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-04-19T18:00:00Z",
+  "currentMRR": 1250,
+  "history": [
+    {
+      "date": "2026-04-19T18:00:00Z",
+      "amount": 1250,
+      "previousAmount": 750,
+      "change": 500,
+      "source": "consulting",
+      "notes": "New client from April 25 event - monthly retainer"
+    },
+    {
+      "date": "2026-04-15T10:00:00Z",
+      "amount": 750,
+      "previousAmount": 500,
+      "change": 250,
+      "source": "service",
+      "notes": "Upsold existing client to premium package"
+    },
+    {
+      "date": "2026-04-10T14:30:00Z",
+      "amount": 500,
+      "previousAmount": 0,
+      "change": 500,
+      "source": "consulting",
+      "notes": "First client! AI operations assessment"
+    }
+  ],
+  "milestones": {
+    "experiment": 500,
+    "bridge": 10000,
+    "final": 42000
+  },
+  "metadata": {
+    "currency": "USD",
+    "trackingStarted": "2026-04-10T14:30:00Z",
+    "lastModified": "2026-04-19T18:00:00Z"
+  }
+}

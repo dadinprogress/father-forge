@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-04-19T18:00:00Z",
+  "currentMRR": 0,
+  "history": [
+    {
+      "date": "ISO timestamp",
+      "amount": 0,
+      "previousAmount": 0,
+      "change": 0,
+      "source": "consulting|product|service|subscription|other",
+      "notes": "Optional context"
+    }
+  ],
+  "milestones": {
+    "experiment": 500,
+    "bridge": 10000,
+    "final": 42000
+  },
+  "metadata": {
+    "currency": "USD",
+    "trackingStarted": "ISO timestamp",
+    "lastModified": "ISO timestamp"
+  }
+}

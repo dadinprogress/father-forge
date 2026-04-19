@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father Forge - Calendar Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+        
+        .status-indicator.connected {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        
+        .status-text {
+            flex: 1;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .event-list {
+            margin-top: 20px;
+        }
+        
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .event-info {
+            flex: 1;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .event-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        .event-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-button {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        .message.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        
+        .setup-instructions {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .setup-instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .setup-instructions code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📅 Calendar Integration</h1>
+            <p class="subtitle">Sync Father Forge milestones with Google Calendar</p>
+        </header>
+        
+        <div id="messageBox" class="message"></div>
+        
+        <!-- Auth Status Card -->
+        <div class="card">
+            <div class="card-title">Google Calendar Connection</div>
+            
+            <div class="auth-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <div class="status-text" id="statusText">
+                    Not connected
+                </div>
+                <button class="button" id="authButton" onclick="handleAuth()">
+                    Connect Google Calendar
+                </button>
+            </div>
+            
+            <div class="setup-instructions" id="setupInstructions">
+                <h3 style="margin-bottom: 12px;">First-time Setup Required:</h3>
+                <ol>
+                    <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color: #667eea;">Google Cloud Console</a></li>
+                    <li>Create a new project (or select existing)</li>
+                    <li>Enable the <strong>Google Calendar API</strong></li>
+                    <li>Create OAuth 2.0 credentials (Web application type)</li>
+                    <li>Add authorized redirect URI: <code>http://localhost:8080/calendar.html</code></li>
+                    <li>Copy your Client ID and paste below</li>
+                </ol>
+                
+                <div style="margin-top: 16px;">
+                    <input 
+                        type="text" 
+                        id="clientIdInput" 
+                        placeholder="Paste Google OAuth Client ID here..."
+                        style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; margin-bottom: 12px;"
+                    >
+                    <button class="button" onclick="saveClientId()">
+                        Save Client ID
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Dates Card -->
+        <div class="card" id="eventsCard" style="display: none;">
+            <div class="card-title">Father Forge Key Dates</div>
+            
+            <div class="event-list" id="eventList">
+                <div class="event-item">
+                    <div class="event-info">
+                        <div class="event-title">April 25 Networking Event</div>
+                        <div class="event-date">Friday, April 25, 2026 - 6:00 PM JST</div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="icon-button" onclick="syncEvent('april25')">
+                            📅 Sync to Calendar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-item">
+                    <div class="event-info">
+                        <div class="event-title">$500 MRR Milestone</div>
+                        <div class="event-date">Target: End of April 2026</div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="icon-button" onclick="syncEvent('milestone500')">
+                            📅 Sync to Calendar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-item">
+                    <div class="event-info">
+                        <div class="event-title">$10k MRR Bridge Goal</div>
+                        <div class="event-date">Target: December 31, 2026</div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="icon-button" onclick="syncEvent('milestone10k')">
+                            📅 Sync to Calendar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-item">
+                    <div class="event-info">
+                        <div class="event-title">$42k MRR Final Goal</div>
+                        <div class="event-date">Target: November 7, 2027</div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="icon-button" onclick="syncEvent('milestone42k')">
+                            📅 Sync to Calendar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="button" onclick="syncAllEvents()">
+                    Sync All Events
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Google API -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        // Configuration
+        const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+        
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        
+        // Initialize Google API
+        document.addEventListener('DOMContentLoaded', () => {
+            gapiLoaded();
+            gisLoaded();
+            loadClientId();
+        });
+        
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+        
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            gapiInited = true;
+        }
+        
+        function gisLoaded() {
+            const clientId = localStorage.getItem('google-calendar-client-id');
+            if (clientId) {
+                initializeGIS(clientId);
+            }
+            gisInited = true;
+        }
+        
+        function initializeGIS(clientId) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: SCOPES,
+                callback: handleAuthCallback,
+            });
+        }
+        
+        function loadClientId() {
+            const clientId = localStorage.getItem('google-calendar-client-id');
+            if (clientId) {
+                document.getElementById('clientIdInput').value = clientId;
+                document.getElementById('setupInstructions').style.display = 'none';
+                updateAuthStatus(false);
+            }
+        }
+        
+        function saveClientId() {
+            const clientId = document.getElementById('clientIdInput').value.trim();
+            if (!clientId) {
+                showMessage('Please enter a valid Client ID', 'error');
+                return;
+            }
+            
+            localStorage.setItem('google-calendar-client-id', clientId);
+            initializeGIS(clientId);
+            document.getElementById('setupInstructions').style.display = 'none';
+            showMessage('Client ID saved! Click "Connect Google Calendar" to authenticate.', 'success');
+        }
+        
+        function handleAuth() {
+            if (!gapiInited || !gisInited) {
+                showMessage('Google API not loaded yet. Please wait...', 'error');
+                return;
+            }
+            
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+        
+        function handleAuthCallback(resp) {
+            if (resp.error !== undefined) {
+                showMessage('Authorization failed: ' + resp.error, 'error');
+                return;
+            }
+            
+            updateAuthStatus(true);
+            document.getElementById('eventsCard').style.display = 'block';
+            showMessage('Successfully connected to Google Calendar!', 'success');
+        }
+        
+        function updateAuthStatus(connected) {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            const button = document.getElementById('authButton');
+            
+            if (connected) {
+                indicator.classList.add('connected');
+                text.textContent = 'Connected to Google Calendar';
+                button.textContent = 'Disconnect';
+                button.onclick = handleDisconnect;
+            } else {
+                indicator.classList.remove('connected');
+                text.textContent = 'Not connected';
+                button.textContent = 'Connect Google Calendar';
+                button.onclick = handleAuth;
+            }
+        }
+        
+        function handleDisconnect() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+            }
+            updateAuthStatus(false);
+            document.getElementById('eventsCard').style.display = 'none';
+            showMessage('Disconnected from Google Calendar', 'info');
+        }
+        
+        async function syncEvent(eventId) {
+            const events = {
+                april25: {
+                    summary: '🎯 Father Forge - April 25 Networking Event',
+                    description: 'International entrepreneur meetup - Midtown BBQ Fushimi, Nagoya',
+                    start: { dateTime: '2026-04-25T18:00:00+09:00', timeZone: 'Asia/Tokyo' },
+                    end: { dateTime: '2026-04-25T21:00:00+09:00', timeZone: 'Asia/Tokyo' },
+                    location: 'Midtown BBQ Fushimi, Nagoya, Japan'
+                },
+                milestone500: {
+                    summary: '💰 Father Forge Milestone: $500 MRR',
+                    description: 'Target: Cover experiment costs ($500/month MRR)',
+                    start: { date: '2026-04-30' },
+                    end: { date: '2026-05-01' }
+                },
+                milestone10k: {
+                    summary: '💰 Father Forge Milestone: $10k MRR (Bridge Goal)',
+                    description: 'Target: Reach $10,000/month MRR to enable job transition',
+                    start: { date: '2026-12-31' },
+                    end: { date: '2027-01-01' }
+                },
+                milestone42k: {
+                    summary: '🎯 Father Forge Milestone: $42k MRR (Final Goal)',
+                    description: 'Target: $42,000/month MRR - Complete financial independence',
+                    start: { date: '2027-11-07' },
+                    end: { date: '2027-11-08' }
+                }
+            };
+            
+            const event = events[eventId];
+            if (!event) {
+                showMessage('Event not found', 'error');
+                return;
+            }
+            
+            try {
+                const request = await gapi.client.calendar.events.insert({
+                    'calendarId': 'primary',
+                    'resource': event
+                });
+                
+                showMessage(`✅ "${event.summary}" synced to Google Calendar`, 'success');
+            } catch (err) {
+                console.error('Error creating event:', err);
+                showMessage('Failed to create event: ' + err.message, 'error');
+            }
+        }
+        
+        async function syncAllEvents() {
+            const eventIds = ['april25', 'milestone500', 'milestone10k', 'milestone42k'];
+            let successCount = 0;
+            
+            for (const id of eventIds) {
+                try {
+                    await syncEvent(id);
+                    successCount++;
+                } catch (err) {
+                    console.error('Error syncing event:', id, err);
+                }
+            }
+            
+            showMessage(`✅ Synced ${successCount}/${eventIds.length} events to Google Calendar`, 'success');
+        }
+        
+        function showMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `message ${type}`;
+            box.style.display = 'block';
+            
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

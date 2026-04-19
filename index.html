@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father Forge - Lead Intelligence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+        }
+        
+        .upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .upload-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th:hover {
+            color: #667eea;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-new {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        
+        .status-contacted {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .status-qualified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Lead Intelligence</h1>
+            <p class="subtitle">April 25 Event - Networking Pipeline</p>
+        </header>
+        
+        <div id="messageBox" class="message"></div>
+        
+        <div class="upload-section" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Drag & drop CSV file here</div>
+            <div class="upload-hint">or click to browse (CSV format required)</div>
+            <input type="file" id="fileInput" class="file-input" accept=".csv">
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                Choose File
+            </button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Leads</div>
+                <div class="stat-value" id="totalLeads">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">New</div>
+                <div class="stat-value" id="newLeads">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Contacted</div>
+                <div class="stat-value" id="contactedLeads">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Qualified</div>
+                <div class="stat-value" id="qualifiedLeads">0</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="leadsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('name')">Name</th>
+                        <th onclick="sortTable('email')">Email</th>
+                        <th onclick="sortTable('company')">Company</th>
+                        <th onclick="sortTable('role')">Role</th>
+                        <th onclick="sortTable('status')">Status</th>
+                        <th onclick="sortTable('date')">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leadsBody">
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div>No leads yet. Upload a CSV file to get started.</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Lead database (will sync with GitHub)
+        let leads = [];
+        let sortDirection = {};
+        
+        // GitHub configuration
+        const GITHUB_CONFIG = {
+            owner: 'dadinprogress',
+            repo: 'father-forge-data',
+            path: 'leads.json',
+            token: '' // Will be set via backend proxy for security
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLeadsFromGitHub();
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            
+            // Drag and drop
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+            
+            // File input
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        async function handleFileUpload(file) {
+            if (!file.name.endsWith('.csv')) {
+                showMessage('Please upload a CSV file', 'error');
+                return;
+            }
+            
+            try {
+                const text = await file.text();
+                const parsedLeads = parseCSV(text);
+                
+                if (parsedLeads.length === 0) {
+                    showMessage('No valid leads found in CSV', 'error');
+                    return;
+                }
+                
+                // Validate and deduplicate
+                const newLeads = validateAndDedup(parsedLeads);
+                
+                // Add to database
+                leads = [...leads, ...newLeads];
+                
+                // Save to GitHub
+                await saveLeadsToGitHub();
+                
+                // Update UI
+                renderLeads();
+                updateStats();
+                
+                showMessage(`Successfully imported ${newLeads.length} leads`, 'success');
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage('Failed to process CSV: ' + error.message, 'error');
+            }
+        }
+        
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) {
+                throw new Error('CSV must have header and at least one data row');
+            }
+            
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const requiredFields = ['name', 'email'];
+            
+            // Validate headers
+            for (const field of requiredFields) {
+                if (!headers.includes(field)) {
+                    throw new Error(`Missing required column: ${field}`);
+                }
+            }
+            
+            const leads = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length !== headers.length) continue;
+                
+                const lead = {};
+                headers.forEach((header, index) => {
+                    lead[header] = values[index];
+                });
+                
+                // Add metadata
+                lead.id = generateId();
+                lead.status = lead.status || 'new';
+                lead.date = lead.date || new Date().toISOString().split('T')[0];
+                
+                leads.push(lead);
+            }
+            
+            return leads;
+        }
+        
+        function validateAndDedup(newLeads) {
+            const existingEmails = new Set(leads.map(l => l.email.toLowerCase()));
+            const validated = [];
+            
+            for (const lead of newLeads) {
+                // Validate email
+                if (!lead.email || !lead.email.includes('@')) {
+                    console.warn('Skipping invalid email:', lead);
+                    continue;
+                }
+                
+                // Check for duplicates
+                if (existingEmails.has(lead.email.toLowerCase())) {
+                    console.warn('Skipping duplicate:', lead.email);
+                    continue;
+                }
+                
+                existingEmails.add(lead.email.toLowerCase());
+                validated.push(lead);
+            }
+            
+            return validated;
+        }
+        
+        function renderLeads() {
+            const tbody = document.getElementById('leadsBody');
+            
+            if (leads.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div>No leads yet. Upload a CSV file to get started.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = leads.map(lead => `
+                <tr>
+                    <td>${lead.name || '-'}</td>
+                    <td>${lead.email}</td>
+                    <td>${lead.company || '-'}</td>
+                    <td>${lead.role || '-'}</td>
+                    <td><span class="status-badge status-${lead.status}">${lead.status}</span></td>
+                    <td>${lead.date}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function updateStats() {
+            document.getElementById('totalLeads').textContent = leads.length;
+            document.getElementById('newLeads').textContent = leads.filter(l => l.status === 'new').length;
+            document.getElementById('contactedLeads').textContent = leads.filter(l => l.status === 'contacted').length;
+            document.getElementById('qualifiedLeads').textContent = leads.filter(l => l.status === 'qualified').length;
+        }
+        
+        function sortTable(column) {
+            sortDirection[column] = !sortDirection[column];
+            const direction = sortDirection[column] ? 1 : -1;
+            
+            leads.sort((a, b) => {
+                const aVal = a[column] || '';
+                const bVal = b[column] || '';
+                return aVal.localeCompare(bVal) * direction;
+            });
+            
+            renderLeads();
+        }
+        
+        async function loadLeadsFromGitHub() {
+            try {
+                // For MVP, use localStorage as backup
+                const stored = localStorage.getItem('father-forge-leads');
+                if (stored) {
+                    leads = JSON.parse(stored);
+                    renderLeads();
+                    updateStats();
+                }
+                
+                // TODO: Implement GitHub API fetch when backend proxy is ready
+            } catch (error) {
+                console.error('Failed to load leads:', error);
+            }
+        }
+        
+        async function saveLeadsToGitHub() {
+            try {
+                // For MVP, save to localStorage
+                localStorage.setItem('father-forge-leads', JSON.stringify(leads));
+                
+                // TODO: Implement GitHub API save via backend proxy
+                console.log('Leads saved to localStorage (GitHub sync pending)');
+            } catch (error) {
+                console.error('Failed to save leads:', error);
+                throw error;
+            }
+        }
+        
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
+        function showMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `message ${type}`;
+            box.style.display = 'block';
+            
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
