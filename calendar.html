@@ -318,6 +318,7 @@
         // Configuration
         const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+        const DEFAULT_CLIENT_ID = '619051212869-tl980hub13rmmvk7b0qobh4d4igc8429.apps.googleusercontent.com';
         
         let tokenClient;
         let gapiInited = false;
@@ -342,7 +343,7 @@
         }
         
         function gisLoaded() {
-            const clientId = localStorage.getItem('google-calendar-client-id');
+            const clientId = localStorage.getItem('google-calendar-client-id') || DEFAULT_CLIENT_ID;
             if (clientId) {
                 initializeGIS(clientId);
             }
@@ -358,7 +359,7 @@
         }
         
         function loadClientId() {
-            const clientId = localStorage.getItem('google-calendar-client-id');
+            const clientId = localStorage.getItem('google-calendar-client-id') || DEFAULT_CLIENT_ID;
             if (clientId) {
                 document.getElementById('clientIdInput').value = clientId;
                 document.getElementById('setupInstructions').style.display = 'none';
