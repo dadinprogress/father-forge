@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father Forge - Infinity Gauntlet Mission Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Cosmic Background */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+            z-index: -2;
+        }
+        
+        .nebula {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(65, 105, 225, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(220, 20, 60, 0.05) 0%, transparent 50%);
+            animation: nebulaDrift 45s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes nebulaDrift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-2%, 2%); }
+        }
+        
+        /* Stars */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* Container */
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        /* Header */
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        
+        .header-right {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .menu-toggle {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .menu-toggle:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Gauntlet Container */
+        .gauntlet-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .gauntlet-svg {
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            max-height: 600px;
+            filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.3));
+        }
+        
+        /* Stone Details Panel */
+        .details-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: rgba(26, 31, 58, 0.95);
+            border-left: 2px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 40px 20px;
+            overflow-y: auto;
+            z-index: 100;
+            transition: right 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+        
+        .details-panel.open {
+            right: 0;
+        }
+        
+        .close-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.2);
+            border: none;
+            color: #FFD700;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .close-panel:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+        
+        .details-content {
+            margin-top: 40px;
+        }
+        
+        .detail-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .detail-value {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .detail-description {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        
+        .detail-action {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            color: #0a0e27;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .detail-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .details-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .gauntlet-container {
+                max-width: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .gauntlet-container {
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div class="cosmic-bg">
+        <div class="nebula"></div>
+        <div class="stars" id="starsContainer"></div>
+    </div>
+    
+    <!-- Header -->
+    <div class="header">
+        <h1>⚡ Father Forge: Infinity Gauntlet</h1>
+        <div class="header-right">
+            <span id="timeDisplay" style="font-size: 12px; color: rgba(255, 255, 255, 0.5);"></span>
+        </div>
+    </div>
+    
+    <!-- Gauntlet Container -->
+    <div class="container">
+        <div class="gauntlet-container">
+            <svg class="gauntlet-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Red Stone (MRR) -->
+                    <radialGradient id="redGradient">
+                        <stop offset="0%" style="stop-color:#FF6666;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#CC0000;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Orange Stone (Leads) -->
+                    <radialGradient id="orangeGradient">
+                        <stop offset="0%" style="stop-color:#FFAA66;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Yellow Stone (Timeline) -->
+                    <radialGradient id="yellowGradient">
+                        <stop offset="0%" style="stop-color:#FFDD66;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FFAA00;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Green Stone (Templates) -->
+                    <radialGradient id="greenGradient">
+                        <stop offset="0%" style="stop-color:#66DD66;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#00BB00;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Blue Stone (Calendar) -->
+                    <radialGradient id="blueGradient">
+                        <stop offset="0%" style="stop-color:#6699FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#0055FF;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Purple Stone (System) -->
+                    <radialGradient id="purpleGradient">
+                        <stop offset="0%" style="stop-color:#DD66FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#9900FF;stop-opacity:1" />
+                    </radialGradient>
+                    
+                    <!-- Glowing filter -->
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    
+                    <!-- Strong glow filter for hover -->
+                    <filter id="strongGlow">
+                        <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                
+                <!-- Gauntlet outline (gold) -->
+                <g id="gauntlet" filter="url(#glow)">
+                    <!-- Wrist band -->
+                    <rect x="200" y="480" width="200" height="40" rx="8" fill="none" stroke="#FFD700" stroke-width="2"/>
+                    
+                    <!-- Thumb -->
+                    <path d="M 250 450 Q 240 400 240 320" fill="none" stroke="#FFD700" stroke-width="3"/>
+                    
+                    <!-- Index finger -->
+                    <path d="M 300 440 Q 300 380 300 280" fill="none" stroke="#FFD700" stroke-width="3"/>
+                    
+                    <!-- Middle finger -->
+                    <path d="M 350 440 Q 350 380 350 260" fill="none" stroke="#FFD700" stroke-width="3"/>
+                    
+                    <!-- Ring finger -->
+                    <path d="M 380 460 Q 385 400 385 320" fill="none" stroke="#FFD700" stroke-width="3"/>
+                </g>
+                
+                <!-- Energy connectors (animated) -->
+                <g id="connectors" opacity="0.3">
+                    <line x1="240" y1="320" x2="300" y2="280" stroke="#FFD700" stroke-width="1"/>
+                    <line x1="300" y1="280" x2="350" y2="260" stroke="#FFD700" stroke-width="1"/>
+                    <line x1="350" y1="260" x2="385" y2="320" stroke="#FFD700" stroke-width="1"/>
+                    <line x1="385" y1="320" x2="240" y2="320" stroke="#FFD700" stroke-width="1"/>
+                </g>
+                
+                <!-- Stones (thumb to pinky) -->
+                <!-- Red Stone - MRR (Thumb) -->
+                <circle class="stone" data-stone="mrr" cx="240" cy="300" r="35" fill="url(#redGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="240" y="310" text-anchor="middle" font-size="12" fill="#000" font-weight="bold">MRR</text>
+                
+                <!-- Orange Stone - Leads (Index) -->
+                <circle class="stone" data-stone="leads" cx="300" cy="260" r="35" fill="url(#orangeGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="300" y="270" text-anchor="middle" font-size="12" fill="#000" font-weight="bold">LEADS</text>
+                
+                <!-- Yellow Stone - Timeline (Middle) -->
+                <circle class="stone" data-stone="timeline" cx="350" cy="240" r="35" fill="url(#yellowGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="350" y="250" text-anchor="middle" font-size="12" fill="#000" font-weight="bold">TIME</text>
+                
+                <!-- Green Stone - Templates (Ring) -->
+                <circle class="stone" data-stone="templates" cx="385" cy="300" r="35" fill="url(#greenGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="385" y="310" text-anchor="middle" font-size="12" fill="#000" font-weight="bold">TMPL</text>
+                
+                <!-- Blue Stone - Calendar (Pinky) -->
+                <circle class="stone" data-stone="calendar" cx="360" cy="360" r="35" fill="url(#blueGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="360" y="370" text-anchor="middle" font-size="12" fill="#000" font-weight="bold">CAL</text>
+                
+                <!-- Purple Stone - System (Center) -->
+                <circle class="stone" data-stone="system" cx="300" cy="340" r="40" fill="url(#purpleGradient)" filter="url(#glow)" stroke="#FFD700" stroke-width="1"/>
+                <text x="300" y="350" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">FORGE</text>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Details Panel -->
+    <div class="details-panel" id="detailsPanel">
+        <button class="close-panel" onclick="closePanel()">✕</button>
+        <div class="details-content" id="detailsContent"></div>
+    </div>
+
+    <script>
+        // Generate random stars
+        function generateStars() {
+            const starsContainer = document.getElementById('starsContainer');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Stone data
+        const stoneData = {
+            mrr: {
+                title: 'MRR',
+                subtitle: 'Monthly Recurring Revenue',
+                icon: '💰',
+                description: 'Track your monthly revenue progress toward $42k goal',
+                action: 'View Financials',
+                link: 'financials.html',
+                loadData: () => {
+                    try {
+                        const financials = JSON.parse(localStorage.getItem('financials') || '{}');
+                        const mrrValue = financials.entries && financials.entries.length > 0 
+                            ? financials.entries[financials.entries.length - 1].mrr || 0 
+                            : 0;
+                        return '$' + mrrValue.toLocaleString() + ' of $42k';
+                    } catch {
+                        return '$0 of $42k';
+                    }
+                }
+            },
+            leads: {
+                title: 'LEADS',
+                subtitle: 'Active Pipeline',
+                icon: '📊',
+                description: 'Track your prospect pipeline and engagement status',
+                action: 'Manage Leads',
+                link: 'index.html',
+                loadData: () => {
+                    try {
+                        const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+                        return leads.length + ' active';
+                    } catch {
+                        return '0 active';
+                    }
+                }
+            },
+            timeline: {
+                title: 'TIMELINE',
+                subtitle: 'Mission Milestones',
+                icon: '⏰',
+                description: 'Days remaining until critical dates and milestones',
+                action: 'View Calendar',
+                link: 'calendar.html',
+                loadData: () => {
+                    const today = new Date();
+                    const april25 = new Date(2026, 3, 25);
+                    const daysRemaining = Math.ceil((april25 - today) / (1000 * 60 * 60 * 24));
+                    return daysRemaining > 0 ? daysRemaining + ' days' : 'IN PROGRESS';
+                }
+            },
+            templates: {
+                title: 'TEMPLATES',
+                subtitle: 'Arsenal',
+                icon: '🎯',
+                description: '5 battle-tested templates: sales, follow-up, proposal, playbooks',
+                action: 'Access Arsenal',
+                link: 'templates.html',
+                loadData: () => '5 ready'
+            },
+            calendar: {
+                title: 'CALENDAR',
+                subtitle: 'Events & Sync',
+                icon: '📅',
+                description: 'Sync Father Forge milestones to Google Calendar',
+                action: 'Open Calendar',
+                link: 'calendar.html',
+                loadData: () => {
+                    try {
+                        const calendar = JSON.parse(localStorage.getItem('calendar') || '[]');
+                        return calendar.length + ' synced';
+                    } catch {
+                        return '0 synced';
+                    }
+                }
+            },
+            system: {
+                title: 'SYSTEM',
+                subtitle: 'Command State',
+                icon: '⚡',
+                description: 'System health, ping status, and command operational status',
+                action: 'Send PING',
+                link: 'dashboard.html',
+                loadData: () => 'OPERATIONAL'
+            }
+        };
+        
+        // Load stats on click
+        document.querySelectorAll('.stone').forEach(stone => {
+            stone.addEventListener('click', function() {
+                const stoneType = this.dataset.stone;
+                const data = stoneData[stoneType];
+                
+                const detailsContent = document.getElementById('detailsContent');
+                const detailValue = data.loadData();
+                
+                detailsContent.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 16px;">${data.icon}</div>
+                    <h2 class="detail-title">${data.title}</h2>
+                    <p style="color: rgba(255, 215, 0, 0.7); margin-bottom: 16px;">${data.subtitle}</p>
+                    <div class="detail-value">${detailValue}</div>
+                    <p class="detail-description">${data.description}</p>
+                    <a href="${data.link}" class="detail-action">${data.action} →</a>
+                `;
+                
+                document.getElementById('detailsPanel').classList.add('open');
+            });
+        });
+        
+        function closePanel() {
+            document.getElementById('detailsPanel').classList.remove('open');
+        }
+        
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            generateStars();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+</html>
