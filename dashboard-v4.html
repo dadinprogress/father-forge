@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father Forge - Mission Control v4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Cosmic Background */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0e27;
+            z-index: -3;
+        }
+        
+        .nebula {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(107, 79, 160, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(32, 201, 151, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 20%, rgba(155, 89, 182, 0.2) 0%, transparent 50%);
+            animation: nebulaDrift 45s ease-in-out infinite;
+            z-index: -2;
+        }
+        
+        @keyframes nebulaDrift {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-3%) translateY(4%); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        /* Particles Container */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 72px;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Ping Button */
+        .ping-button {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+        
+        .ping-button:hover {
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
+            transform: scale(1.05);
+        }
+        
+        .ping-button:active {
+            transform: scale(0.95);
+        }
+        
+        .ping-status {
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 215, 0, 0.8);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 72px;
+            width: 240px;
+            height: calc(100vh - 72px);
+            background: rgba(26, 31, 58, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 215, 0, 0.1);
+            padding: 32px 20px;
+            overflow-y: auto;
+            z-index: 90;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+        
+        .nav-section {
+            margin-bottom: 32px;
+        }
+        
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: rgba(255, 215, 0, 0.6);
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        .nav-item {
+            display: block;
+            padding: 11px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+        }
+        
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 215, 0, 0.1);
+            border-left-color: #FFD700;
+            color: #FFD700;
+        }
+        
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            margin-top: 72px;
+            padding: 48px;
+            min-height: calc(100vh - 72px);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Milestones Widget */
+        .milestones-widget {
+            background: rgba(255, 215, 0, 0.06);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 48px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .widget-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255, 215, 0, 0.8);
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+        
+        .milestones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .milestone-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid;
+        }
+        
+        .milestone-item.complete { border-left-color: #6bff6b; }
+        .milestone-item.in-progress { border-left-color: #4fb3d9; }
+        .milestone-item.pending { border-left-color: #ffd700; }
+        
+        .milestone-name {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        
+        .milestone-stat {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Tiles Grid */
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        
+        .tile {
+            background: rgba(255, 215, 0, 0.06);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, var(--tile-color), transparent 60%) 1;
+            border-radius: 12px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+        
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--tile-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .tile:hover {
+            transform: scale(1.04) translateY(-4px);
+            border-color: var(--tile-color);
+            box-shadow: 0 12px 40px rgba(255, 215, 0, 0.15);
+        }
+        
+        .tile:hover::before {
+            opacity: 0.2;
+        }
+        
+        .tile-gem {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 12px var(--tile-color));
+        }
+        
+        .tile-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+        
+        .tile-stat {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--tile-color);
+            margin-bottom: 8px;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+        
+        .tile-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Tile Colors */
+        .tile.leads { --tile-color: #FF9A44; }
+        .tile.financials { --tile-color: #FF6B6B; }
+        .tile.calendar { --tile-color: #4FB3D9; }
+        .tile.templates { --tile-color: #6BFF6B; }
+        .tile.content { --tile-color: #E56BFF; }
+        .tile.system { --tile-color: #FFFFFF; }
+        .tile.roadmap { --tile-color: #FFD700; }
+        
+        /* Content Calendar */
+        .calendar-header {
+            margin-bottom: 32px;
+        }
+        
+        .calendar-header h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+        
+        .calendar-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 500px;
+        }
+        
+        .column-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: rgba(255, 215, 0, 0.8);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            letter-spacing: 1px;
+        }
+        
+        .kanban-card {
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .kanban-card:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .card-platforms {
+            display: flex;
+            gap: 6px;
+            font-size: 10px;
+        }
+        
+        .platform-badge {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: rgba(255, 215, 0, 0.8);
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .tiles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .kanban-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .sidebar.hidden {
+                transform: translateX(-100%);
+            }
+            
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 0 16px;
+            }
+            
+            .header-title {
+                font-size: 20px;
+            }
+            
+            .tiles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-right {
+                gap: 12px;
+            }
+            
+            .ping-button {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .ping-status {
+                font-size: 10px;
+                bottom: -20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div class="cosmic-bg">
+        <div class="nebula"></div>
+        <div class="particles" id="particlesContainer"></div>
+    </div>
+    
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">⚡ Father Forge</div>
+        <div class="header-right">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <button class="ping-button" onclick="sendPing()" id="pingButton">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <defs>
+                        <linearGradient id="metalGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#DAA520;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <radialGradient id="redStone">
+                            <stop offset="0%" style="stop-color:#FF9999;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#CC0000;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="orangeStone">
+                            <stop offset="0%" style="stop-color:#FFBB88;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="yellowStone">
+                            <stop offset="0%" style="stop-color:#FFFF99;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFAA00;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="greenStone">
+                            <stop offset="0%" style="stop-color:#99FF99;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00BB00;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="blueStone">
+                            <stop offset="0%" style="stop-color:#99DDFF;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0055FF;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="purpleStone">
+                            <stop offset="0%" style="stop-color:#FF99FF;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#9900FF;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <filter id="gemGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        
+                        <filter id="stoneGlow" class="stone-glow-filter">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
+                    <!-- Gauntlet outline -->
+                    <g id="gauntlet">
+                        <path d="M 30 40 Q 28 35 30 30 L 70 30 Q 72 35 70 40" fill="none" stroke="url(#metalGold)" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 25 45 Q 22 50 25 60 L 75 60 Q 78 50 75 45" fill="none" stroke="url(#metalGold)" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 30 60 L 28 75 M 50 60 L 50 78 M 70 60 L 72 75" stroke="url(#metalGold)" stroke-width="3" stroke-linecap="round"/>
+                    </g>
+                    
+                    <!-- Stones -->
+                    <circle class="infinity-stone" cx="54" cy="28" r="6" fill="url(#redStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                    <circle class="infinity-stone" cx="38" cy="48" r="6" fill="url(#orangeStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                    <circle class="infinity-stone" cx="62" cy="48" r="6" fill="url(#yellowStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                    <circle class="infinity-stone" cx="50" cy="65" r="6" fill="url(#greenStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                    <circle class="infinity-stone" cx="50" cy="50" r="6" fill="url(#blueStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                    <circle class="infinity-stone" cx="50" cy="40" r="6" fill="url(#purpleStone)" filter="url(#stoneGlow)" stroke="url(#metalGold)" stroke-width="1"/>
+                </svg>
+                <div class="ping-status" id="pingStatus">Ready to Ping</div>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-section">
+            <div class="nav-title">Dashboard</div>
+            <a class="nav-item active" onclick="showPage('dashboard')">Mission Control</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Operations</div>
+            <a class="nav-item" onclick="navigateTo('index.html')">Leads</a>
+            <a class="nav-item" onclick="navigateTo('financials.html')">Financials</a>
+            <a class="nav-item" onclick="navigateTo('calendar.html')">Calendar</a>
+            <a class="nav-item" onclick="navigateTo('templates.html')">Templates</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Strategy</div>
+            <a class="nav-item" onclick="showPage('contentCalendar')">Content Calendar</a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <!-- Milestones Widget -->
+            <div class="milestones-widget">
+                <div class="widget-title">📊 Mission Gates</div>
+                <div class="milestones-grid" id="milestonesGrid"></div>
+            </div>
+            
+            <!-- Tiles Grid -->
+            <div class="tiles-grid" id="tilesGrid"></div>
+        </div>
+        
+        <!-- Content Calendar Page -->
+        <div id="contentCalendar" class="page">
+            <div class="calendar-header">
+                <h2>Content Strategy</h2>
+                <p>Plan, draft, schedule, and publish @progressdad content</p>
+            </div>
+            <div class="kanban-board" id="kanbanBoard"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize particles
+        function initParticles() {
+            const container = document.getElementById('particlesContainer');
+            const spawnRate = 2; // 2-3 particles per second
+            
+            for (let i = 0; i < 50; i++) {
+                createParticle(container);
+            }
+            
+            // Continuous spawn
+            setInterval(() => {
+                if (Math.random() > 0.3) createParticle(container);
+            }, 300);
+        }
+        
+        function createParticle(container) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.opacity = Math.random() * 0.6 + 0.2;
+            particle.style.animationDuration = (Math.random() * 8 + 12) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 20000);
+        }
+        
+        // Sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        }
+        
+        // Navigation
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // Gem SVG Generator
+        function createGemSVG(color) {
+            const colors = {
+                amber: '#FF9A44',
+                ruby: '#FF6B6B',
+                sapphire: '#4FB3D9',
+                emerald: '#6BFF6B',
+                amethyst: '#E56BFF',
+                diamond: '#FFFFFF',
+                topaz: '#FFD700'
+            };
+            
+            const c = colors[color] || color;
+            
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="gem-${color}">
+                        <stop offset="0%" style="stop-color:${c};stop-opacity:0.9"/>
+                        <stop offset="100%" style="stop-color:${c};stop-opacity:0.3"/>
+                    </radialGradient>
+                    <filter id="gemFilter-${color}">
+                        <feGaussianBlur stdDeviation="3"/>
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.7"/>
+                        </feComponentTransfer>
+                    </filter>
+                </defs>
+                <path d="M50 10 L85 45 L85 85 L50 95 L15 85 L15 45 Z" fill="url(#gem-${color})" stroke="${c}" stroke-width="2" filter="url(#gemFilter-${color})"/>
+                <polygon points="50,10 85,45 50,50" fill="${c}" opacity="0.6"/>
+                <polygon points="50,50 85,45 85,85" fill="${c}" opacity="0.4"/>
+            </svg>`;
+        }
+        
+        // Tiles data
+        const tiles = [
+            {
+                id: 'leads',
+                title: 'Leads',
+                gem: 'amber',
+                class: 'leads',
+                getStat: () => {
+                    try {
+                        const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+                        return leads.length || '0';
+                    } catch { return '0'; }
+                },
+                label: 'active prospects',
+                link: 'index.html'
+            },
+            {
+                id: 'financials',
+                title: 'Financials',
+                gem: 'ruby',
+                class: 'financials',
+                getStat: () => {
+                    try {
+                        const financials = JSON.parse(localStorage.getItem('financials') || '{}');
+                        const mrrValue = financials.entries && financials.entries.length > 0 
+                            ? financials.entries[financials.entries.length - 1].mrr || 0 
+                            : 0;
+                        return mrrValue > 0 ? `$${(mrrValue / 1000).toFixed(1)}k` : '$0';
+                    } catch { return '$0'; }
+                },
+                label: 'of $42k goal',
+                link: 'financials.html'
+            },
+            {
+                id: 'calendar',
+                title: 'Calendar',
+                gem: 'sapphire',
+                class: 'calendar',
+                getStat: () => {
+                    const today = new Date();
+                    const april25 = new Date(2026, 3, 25);
+                    const daysRemaining = Math.ceil((april25 - today) / (1000 * 60 * 60 * 24));
+                    return daysRemaining > 0 ? daysRemaining : 'LIVE';
+                },
+                label: 'days to milestone',
+                link: 'calendar.html'
+            },
+            {
+                id: 'templates',
+                title: 'Templates',
+                gem: 'emerald',
+                class: 'templates',
+                getStat: () => '5',
+                label: 'arsenal ready',
+                link: 'templates.html'
+            },
+            {
+                id: 'content',
+                title: 'Content',
+                gem: 'amethyst',
+                class: 'content',
+                getStat: () => {
+                    try {
+                        const contentCalendar = JSON.parse(localStorage.getItem('contentCalendar') || '[]');
+                        return contentCalendar.length || '0';
+                    } catch { return '0'; }
+                },
+                label: 'total ideas',
+                onclick: () => showPage('contentCalendar')
+            },
+            {
+                id: 'system',
+                title: 'System',
+                gem: 'diamond',
+                class: 'system',
+                getStat: () => 'ONLINE',
+                label: 'status',
+                onclick: () => {}
+            },
+            {
+                id: 'roadmap',
+                title: 'Roadmap',
+                gem: 'topaz',
+                class: 'roadmap',
+                getStat: () => '4',
+                label: 'gates open',
+                onclick: () => {}
+            }
+        ];
+        
+        // Render tiles
+        function renderTiles() {
+            const grid = document.getElementById('tilesGrid');
+            grid.innerHTML = tiles.map(tile => {
+                const onclick = tile.link ? `navigateTo('${tile.link}')` : `showPage('contentCalendar')`;
+                return `
+                    <div class="tile ${tile.class}" onclick="${onclick}">
+                        <div class="tile-gem">${createGemSVG(tile.gem)}</div>
+                        <div class="tile-title">${tile.title}</div>
+                        <div class="tile-stat">${tile.getStat()}</div>
+                        <div class="tile-label">${tile.label}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Milestones
+        const milestones = [
+            { name: '$500 MRR', status: 'complete' },
+            { name: '$10k MRR', status: 'in-progress' },
+            { name: '$42k MRR', status: 'pending' }
+        ];
+        
+        function renderMilestones() {
+            const grid = document.getElementById('milestonesGrid');
+            grid.innerHTML = milestones.map(m => `
+                <div class="milestone-item ${m.status}">
+                    <div class="milestone-name">${m.name}</div>
+                    <div class="milestone-stat">${
+                        m.status === 'complete' ? '✅ Complete' : 
+                        m.status === 'in-progress' ? '⏳ In Progress' : 
+                        '⏸️ Goal'
+                    }</div>
+                </div>
+            `).join('');
+        }
+        
+        // Content Calendar
+        function loadContentCalendar() {
+            try {
+                const contentCalendar = JSON.parse(localStorage.getItem('contentCalendar') || '[]');
+                renderKanban(contentCalendar);
+            } catch {
+                renderKanban([]);
+            }
+        }
+        
+        function renderKanban(items) {
+            const stages = ['ideas', 'draft', 'scheduled', 'published'];
+            const stageNames = { ideas: 'Ideas', draft: 'Draft', scheduled: 'Scheduled', published: 'Published' };
+            
+            const board = document.getElementById('kanbanBoard');
+            board.innerHTML = stages.map(stage => {
+                const stageItems = items.filter(item => item.stage === stage);
+                return `
+                    <div class="kanban-column">
+                        <div class="column-title">${stageNames[stage]} (${stageItems.length})</div>
+                        ${stageItems.map(item => `
+                            <div class="kanban-card">
+                                <div class="card-title">${item.title}</div>
+                                <div class="card-platforms">
+                                    ${item.platforms.map(p => `<span class="platform-badge">${p}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Ping Button
+        function sendPing() {
+            const button = document.getElementById('pingButton');
+            const status = document.getElementById('pingStatus');
+            
+            // Trigger hand close animation
+            const gauntlet = button.querySelector('#gauntlet');
+            gauntlet.style.animation = 'handClose 0.3s ease-out';
+            
+            // Trigger stone glow
+            const stones = button.querySelectorAll('.infinity-stone');
+            stones.forEach(stone => {
+                stone.style.animation = 'stoneGlow 0.6s ease-out';
+                stone.style.filter = 'drop-shadow(0 0 12px currentColor)';
+            });
+            
+            // Update status
+            status.textContent = 'PING SENT ⚡';
+            status.style.color = '#6bff6b';
+            
+            // Reset after 2s
+            setTimeout(() => {
+                gauntlet.style.animation = '';
+                stones.forEach(stone => {
+                    stone.style.animation = '';
+                    stone.style.filter = '';
+                });
+                status.textContent = 'Ready to Ping';
+                status.style.color = 'rgba(255, 215, 0, 0.8)';
+            }, 2000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticles();
+            renderTiles();
+            renderMilestones();
+            loadContentCalendar();
+            
+            // Refresh stats every 5s
+            setInterval(() => {
+                renderTiles();
+                renderMilestones();
+            }, 5000);
+        });
+        
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes handClose {
+                0% { transform: scaleX(1); }
+                50% { transform: scaleX(0.85); }
+                100% { transform: scaleX(1); }
+            }
+            
+            @keyframes stoneGlow {
+                0% { filter: drop-shadow(0 0 4px currentColor); }
+                50% { filter: drop-shadow(0 0 16px currentColor); }
+                100% { filter: drop-shadow(0 0 4px currentColor); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
